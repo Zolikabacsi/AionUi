@@ -3,6 +3,7 @@
  * Copyright 2025 AionUi (aionui.com)
  * SPDX-License-Identifier: Apache-2.0
  */
+// CI sanity-check marker: confirms the build pipeline runs end-to-end on this fork.
 
 // configureChromium sets app name (dev isolation) and Chromium flags — must run before
 // ANY module that calls app.getPath('userData'), because Electron caches the path on first call.
