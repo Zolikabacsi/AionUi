@@ -63,6 +63,9 @@ export type TTeam = {
   workspace_mode: WorkspaceMode;
   leader_assistant_id: string;
   assistants: TeamAssistant[];
+  /** Optional explicit project binding. When set, the team is project-agnostic
+   *  and can switch projects without cloning. */
+  project_id?: string | null;
   /** @deprecated Use leader_assistant_id. */
   leader_agent_id?: string;
   /** @deprecated Use assistants. */

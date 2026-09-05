@@ -9,7 +9,7 @@ import type { TeamAssistantInput } from '@/common/adapter/teamMapper';
 import { useAuth } from '@renderer/hooks/context/AuthContext';
 import { useLayoutContext } from '@/renderer/hooks/context/LayoutContext';
 import AionModal from '@renderer/components/base/AionModal';
-import { WorkspaceFolderSelect } from '@renderer/components/workspace';
+import ProjectSelect from './ProjectSelect';
 import { getConversationCreateErrorMessage } from '@renderer/pages/conversation/utils/conversationCreateError';
 import { useTeamAssistantOptions } from '../hooks/useTeamAssistantOptions';
 import type { TeamAssistantOption } from './assistantSelectUtils';
@@ -41,7 +41,7 @@ const TeamCreateModal: React.FC<Props> = ({ visible, onClose, onCreated }) => {
   const [name, setName] = useState('');
   const [selectedMembers, setSelectedMembers] = useState<TeamMemberDraft[]>([]);
   const [leaderSelectionId, setLeaderSelectionId] = useState<string | undefined>(undefined);
-  const [workspace, setWorkspace] = useState('');
+  const [projectId, setProjectId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   // 窄屏专用：助手选择器以下拉列表形式，锚在“添加成员”按钮上按需唤出。
   const [assistantDropdownOpen, setAssistantDropdownOpen] = useState(false);
@@ -56,7 +56,7 @@ const TeamCreateModal: React.FC<Props> = ({ visible, onClose, onCreated }) => {
     setName('');
     setSelectedMembers([]);
     setLeaderSelectionId(undefined);
-    setWorkspace('');
+    setProjectId(null);
     setAssistantDropdownOpen(false);
     onClose();
   };
@@ -121,9 +121,10 @@ const TeamCreateModal: React.FC<Props> = ({ visible, onClose, onCreated }) => {
       const team = await ipcBridge.team.create.invoke({
         user_id,
         name,
-        workspace,
+        workspace: '',
         workspace_mode: 'shared',
         agents,
+        ...(projectId ? { project_id: projectId } : {}),
       });
 
       // The platform bridge swallows provider errors and returns a sentinel object
@@ -178,19 +179,14 @@ const TeamCreateModal: React.FC<Props> = ({ visible, onClose, onCreated }) => {
       </div>
 
       <div className='text-14px font-500 leading-21px text-t-secondary'>
-        {t('team.create.workspaceLabel', { defaultValue: 'Workspace' })}
+        {t('team.create.projectLabel', { defaultValue: 'Project' })}
       </div>
       <div>
-        <WorkspaceFolderSelect
-          value={workspace}
-          onChange={setWorkspace}
-          placeholder={t('team.create.selectFolder', { defaultValue: 'Select folder' })}
-          recentLabel={t('team.create.recentLabel', { defaultValue: 'Recent' })}
-          chooseDifferentLabel={t('team.create.chooseDifferentFolder', {
-            defaultValue: 'Choose a different folder',
-          })}
-          triggerTestId='team-create-workspace-trigger'
-          menuTestId='team-create-workspace-menu'
+        <ProjectSelect
+          value={projectId}
+          onChange={setProjectId}
+          placeholder={t('team.create.selectProject', { defaultValue: 'Select project' })}
+          className='w-full'
         />
       </div>
     </div>

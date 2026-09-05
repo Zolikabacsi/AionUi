@@ -27,6 +27,7 @@ import TeamTabs from './components/TeamTabs';
 import TeamChatView from './components/TeamChatView';
 import TeamAgentIdentity from './components/TeamAgentIdentity';
 import TeamViewToggle from './components/TeamViewToggle';
+import TeamProjectSwitcher from './components/TeamProjectSwitcher';
 import TeamActivityView from './activity/TeamActivityView';
 import TeamWarmupOverlay from './components/TeamWarmupOverlay';
 import { useTeamViewMode } from './hooks/useTeamViewMode';
@@ -583,16 +584,16 @@ const TeamPageContent: React.FC<TeamPageContentProps> = ({
     () => getConversationOrNull(leadAssistant!.conversation_id)
   );
   const leaderConversationIdForProject = leadAssistant?.conversation_id;
-  // Prefer the synchronous list-snapshot project id for the leader conversation
-  // so switching teams publishes the project immediately. `dispatchConversation`
-  // is an async SWR fetch that previously lagged the switch, leaving the prior
-  // team's Explorer tree painted until it resolved. Snapshot miss (cold start /
-  // row not yet loaded) falls back to the fetched conversation's project_id.
+  // Prefer an explicit `team.project_id` (project-agnostic teams); otherwise
+  // fall back to the leader conversation's project_id (legacy teams).
   const snapshotTeamProjectId = leaderConversationIdForProject
     ? getSnapshotConversationProjectId(leaderConversationIdForProject)
     : undefined;
-  const teamProjectId =
-    snapshotTeamProjectId !== undefined ? snapshotTeamProjectId : (dispatchConversation?.project_id ?? null);
+  const teamProjectId = team.project_id
+    ? team.project_id
+    : snapshotTeamProjectId !== undefined
+      ? snapshotTeamProjectId
+      : (dispatchConversation?.project_id ?? null);
 
   // Publish the team's project so the Layout-level Explorer host renders it —
   // mirrors conversation/index.tsx (project-scoped, persistent across agent-tab
@@ -648,11 +649,14 @@ const TeamPageContent: React.FC<TeamPageContentProps> = ({
 
   const siderTitle = useMemo(
     () => (
-      <div className='flex items-center justify-between'>
-        <span className='text-16px font-bold text-t-primary'>{t('conversation.workspace.title')}</span>
+      <div className='flex flex-col gap-8px'>
+        <div className='flex items-center justify-between'>
+          <span className='text-16px font-bold text-t-primary'>{t('conversation.workspace.title')}</span>
+        </div>
+        <TeamProjectSwitcher team={team} />
       </div>
     ),
-    [t]
+    [t, team]
   );
 
   const sider = useMemo(() => {

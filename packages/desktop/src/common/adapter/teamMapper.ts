@@ -30,6 +30,10 @@ export type ICreateTeamParams = {
   workspace: string;
   workspace_mode: WorkspaceMode;
   agents: TeamAssistantInput[];
+  /** Optional explicit project binding. When provided, the team workspace is
+   *  derived from the project's workspace folder and the supplied `workspace`
+   *  is ignored by the backend. */
+  project_id?: string;
 };
 
 export type IAddTeamAssistantParams = {
@@ -139,6 +143,7 @@ export function fromBackendTeam(raw: unknown): TTeam {
     assistants,
     leader_agent_id: leaderAssistantId,
     agents: assistants,
+    project_id: (r.project_id as string | undefined) ?? null,
     session_mode: r.session_mode as string | undefined,
     created_at: (r.created_at as number | undefined) ?? 0,
     updated_at: (r.updated_at as number | undefined) ?? 0,

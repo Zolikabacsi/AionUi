@@ -2255,6 +2255,7 @@ export const team = {
       name: p.name,
       agents: p.agents.map(toBackendAssistant),
       ...(p.workspace ? { workspace: p.workspace } : {}),
+      ...(p.project_id ? { project_id: p.project_id } : {}),
     })),
     fromBackendTeam
   ),
@@ -2305,6 +2306,13 @@ export const team = {
   renameTeam: httpPatch<void, { id: string; name: string }>(
     (p) => `/api/teams/${p.id}/name`,
     (p) => ({ name: p.name })
+  ),
+  updateProject: withResponseMap(
+    httpPatch<TTeam, { id: string; project_id: string }>(
+      (p) => `/api/teams/${p.id}/project`,
+      (p) => ({ project_id: p.project_id })
+    ),
+    fromBackendTeam
   ),
   setSessionMode: httpPost<void, { team_id: string; session_mode: string }>(
     (p) => `/api/teams/${p.team_id}/session-mode`,
