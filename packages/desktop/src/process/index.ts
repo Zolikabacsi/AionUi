@@ -17,7 +17,7 @@ if (app.isPackaged) {
   process.env.PREBUILDS_ONLY = '1';
 }
 import initStorage from './utils/initStorage';
-import './utils/initBridge';
+import { initAllBridges } from './bridge';
 import './services/i18n'; // Initialize i18n for main process
 
 export const initializeProcess = async () => {

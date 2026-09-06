@@ -32,7 +32,15 @@
  * `browser.ts` can share it without bootstrapping each other's WebSocket.
  */
 
-import { resolveCoreCsrfToken } from './httpBridge';
+/**
+ * Stub CSRF token resolver — the open-source WebUI removed its CSRF layer (M6);
+ * the double-submit scheme returns in M7. Until then this always returns '',
+ * so the performRefresh call attaches no x-csrf-token header. The aionpro
+ * superset resolves a real token and its backend enforces the check.
+ */
+function resolveCoreCsrfToken(): string {
+  return '';
+}
 
 /** WebSocket close code the backend uses for auth policy violations (RFC 6455 §7.4.1). */
 export const WS_CLOSE_POLICY_VIOLATION = 1008;

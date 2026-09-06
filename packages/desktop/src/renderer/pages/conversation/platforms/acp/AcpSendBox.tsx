@@ -14,7 +14,10 @@ import MobileActionSheet, {
 import SendBox from '@/renderer/components/chat/SendBox';
 import ThoughtDisplay from '@/renderer/components/chat/ThoughtDisplay';
 import FileAttachButton from '@/renderer/components/media/FileAttachButton';
-import { audioExts, getFileExtension, imageExts } from '@/renderer/services/FileService';
+import { getFileExtension } from '@/renderer/services/FileService';
+
+const IMAGE_EXTS = ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp'];
+const AUDIO_EXTS = ['.mp3', '.wav', '.m4a', '.ogg', '.flac'];
 import FilePreview from '@/renderer/components/media/FilePreview';
 import HorizontalFileList from '@/renderer/components/media/HorizontalFileList';
 import { classifyConfigSetError, useAcpConfigOptions } from '@/renderer/hooks/agent/useAcpConfigOptions';
@@ -149,8 +152,8 @@ const AcpSendBox: React.FC<{
   const mediaPathHintFor = useCallback(
     (path: string): string | undefined => {
       const ext = getFileExtension(path).toLowerCase();
-      const isNativeImage = ext !== '.svg' && imageExts.includes(ext);
-      const isNativeAudio = audioExts.includes(ext);
+      const isNativeImage = ext !== '.svg' && IMAGE_EXTS.includes(ext);
+      const isNativeAudio = AUDIO_EXTS.includes(ext);
       if (!isNativeImage && !isNativeAudio) return undefined;
       const supported = isNativeImage ? promptCapability?.image : promptCapability?.audio;
       if (supported) return undefined;
