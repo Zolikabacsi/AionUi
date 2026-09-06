@@ -67,13 +67,15 @@
     "selectOneLeader": "Select one Team Leader",
     "subtitle": "Let multiple AI assistants team up and collaborate. We suggest one team focuses on a single goal — create separate teams for different tasks.",
     "nameLabel": "Team name",
-    "workspaceLabel": "Workspace",
     "allAssistantsWithCount": "All assistants ({{count}})",
     "selectedMembersWithCount": "Selected members {{count}} · ⚑ = Leader",
     "selectedMembersTitleWithCount": "Selected members {{count}}",
     "leaderLegend": "= Leader",
     "membersHelper": "Choose team members and assign one Leader. The same assistant can be selected multiple times.",
-    "memberHint": "No suitable assistant as a member? After creation, let the Leader create temporary team members in chat."
+    "memberHint": "No suitable assistant as a member? After creation, let the Leader create temporary team members in chat.",
+    "selectProject": "프로젝트 선택",
+    "noProjects": "아직 프로젝트가 없습니다",
+    "projectLabel": "프로젝트"
   },
   "removeAgent": {
     "confirmTitle": "팀 멤버 제거",
@@ -189,5 +191,16 @@
       "idle_notification": "유휴 알림",
       "shutdown_request": "종료 요청"
     }
+  },
+  "project": {
+    "unassigned": "프로젝트 없음",
+    "assigned": "프로젝트가 할당되었습니다",
+    "assignFailed": "프로젝트 할당에 실패했습니다",
+    "assignProject": "프로젝트 할당",
+    "switch": "프로젝트 전환",
+    "switchTitle": "프로젝트를 전환할까요?",
+    "switchConfirm": "팀 프로젝트를 전환하면 각 팀원의 대화 컨텍스트가 초기화됩니다. 이 작업은 되돌릴 수 없습니다.",
+    "switched": "프로젝트가 전환되었습니다",
+    "switchFailed": "프로젝트 전환에 실패했습니다"
   }
 }

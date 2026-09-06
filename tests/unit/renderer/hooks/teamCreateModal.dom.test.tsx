@@ -93,8 +93,8 @@ vi.mock('@renderer/components/base/AionModal', () => {
   };
 });
 
-vi.mock('@renderer/components/workspace', () => ({
-  WorkspaceFolderSelect: () => <div data-testid='workspace-folder-select' />,
+vi.mock('@renderer/pages/team/components/ProjectSelect', () => ({
+  default: () => <div data-testid='team-create-project-select' />,
 }));
 
 vi.mock('@/common', () => ({
@@ -214,7 +214,7 @@ describe('TeamCreateModal', () => {
     expect(within(detailsPane).getByText('Selected members 0')).toBeInTheDocument();
     expect(within(detailsPane).getByText('Selected members 0')).toHaveClass('text-15px');
     expect(nameInput).toHaveClass('!h-38px', '!text-13px');
-    expect(within(detailsPane).getByTestId('workspace-folder-select')).toBeInTheDocument();
+    expect(within(detailsPane).getByTestId('team-create-project-select')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Confirm Create' })).toHaveClass('!h-38px', '!text-13px');
   });
 

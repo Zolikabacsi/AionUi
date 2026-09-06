@@ -67,13 +67,15 @@
     "selectOneLeader": "Select one Team Leader",
     "subtitle": "Let multiple AI assistants team up and collaborate. We suggest one team focuses on a single goal — create separate teams for different tasks.",
     "nameLabel": "Team name",
-    "workspaceLabel": "Workspace",
     "allAssistantsWithCount": "All assistants ({{count}})",
     "selectedMembersWithCount": "Selected members {{count}} · ⚑ = Leader",
     "selectedMembersTitleWithCount": "Selected members {{count}}",
     "leaderLegend": "= Leader",
     "membersHelper": "Choose team members and assign one Leader. The same assistant can be selected multiple times.",
-    "memberHint": "No suitable assistant as a member? After creation, let the Leader create temporary team members in chat."
+    "memberHint": "No suitable assistant as a member? After creation, let the Leader create temporary team members in chat.",
+    "selectProject": "プロジェクトを選択",
+    "noProjects": "まだプロジェクトがありません",
+    "projectLabel": "プロジェクト"
   },
   "removeAgent": {
     "confirmTitle": "チームメンバーを削除",
@@ -189,5 +191,16 @@
       "idle_notification": "アイドル通知",
       "shutdown_request": "停止リクエスト"
     }
+  },
+  "project": {
+    "unassigned": "プロジェクトなし",
+    "assigned": "プロジェクトを割り当てました",
+    "assignFailed": "プロジェクトの割り当てに失敗しました",
+    "assignProject": "プロジェクトを割り当て",
+    "switch": "プロジェクトを切り替え",
+    "switchTitle": "プロジェクトを切り替えますか？",
+    "switchConfirm": "チームのプロジェクトを切り替えると、各メンバーの会話コンテキストがリセットされます。この操作は元に戻せません。",
+    "switched": "プロジェクトを切り替えました",
+    "switchFailed": "プロジェクトの切り替えに失敗しました"
   }
 }

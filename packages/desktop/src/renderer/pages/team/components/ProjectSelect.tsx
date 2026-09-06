@@ -73,9 +73,13 @@ const ProjectSelect: React.FC<ProjectSelectProps> = ({
       }}
       showSearch
       filterOption={(input, option) =>
-        String(option?.props?.children ?? '').toLowerCase().includes(input.toLowerCase())
+        String((option?.props as { children?: unknown } | undefined)?.children ?? '')
+          .toLowerCase()
+          .includes(input.toLowerCase())
       }
-      notFoundContent={isLoading ? null : <Empty description={t('team.create.noProjects', { defaultValue: 'No projects yet' })} />}
+      notFoundContent={
+        isLoading ? null : <Empty description={t('team.create.noProjects', { defaultValue: 'No projects yet' })} />
+      }
     >
       {(data ?? []).map((p) => (
         <Select.Option key={p.project_id} value={p.project_id}>

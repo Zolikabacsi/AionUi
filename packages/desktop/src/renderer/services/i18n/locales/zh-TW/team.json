@@ -67,13 +67,15 @@
     "selectOneLeader": "請選擇一個 Team Leader",
     "subtitle": "讓多個 AI 助手組隊協作。建議一個團隊只專注一個目標，不同任務分開建。",
     "nameLabel": "團隊名",
-    "workspaceLabel": "工作空間",
     "allAssistantsWithCount": "所有助手 ({{count}})",
     "selectedMembersWithCount": "已選成員 {{count}} · ⚑ = Leader",
     "selectedMembersTitleWithCount": "已選成員 {{count}}",
     "leaderLegend": "= Leader",
     "membersHelper": "選擇團隊成員並指定一個 Leader。同一個助手可被多次選擇。",
-    "memberHint": "沒有合適的助手當隊員？建立後可讓 Leader 在對話中建立臨時隊員。"
+    "memberHint": "沒有合適的助手當隊員？建立後可讓 Leader 在對話中建立臨時隊員。",
+    "selectProject": "選擇專案",
+    "noProjects": "尚無專案",
+    "projectLabel": "專案"
   },
   "removeAgent": {
     "confirmTitle": "移除團隊成員",
@@ -189,5 +191,16 @@
       "idle_notification": "閒置通知",
       "shutdown_request": "關閉請求"
     }
+  },
+  "project": {
+    "unassigned": "未指派專案",
+    "assigned": "已指派專案",
+    "assignFailed": "指派專案失敗",
+    "assignProject": "指派專案",
+    "switch": "切換專案",
+    "switchTitle": "切換專案？",
+    "switchConfirm": "切換團隊專案將重設每個隊友的對話脈絡。此操作無法復原。",
+    "switched": "專案已切換",
+    "switchFailed": "切換專案失敗"
   }
 }

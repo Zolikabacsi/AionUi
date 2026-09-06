@@ -67,13 +67,15 @@
     "selectOneLeader": "请选择一个 Team Leader",
     "subtitle": "让多个 AI 助手组队协作。建议一个团队只专注一个目标，不同任务分开建。",
     "nameLabel": "团队名",
-    "workspaceLabel": "工作空间",
     "allAssistantsWithCount": "所有助手 ({{count}})",
     "selectedMembersWithCount": "已选成员 {{count}} · ⚑ = Leader",
     "selectedMembersTitleWithCount": "已选成员 {{count}}",
     "leaderLegend": "= Leader",
     "membersHelper": "选择团队成员并指定一个 Leader。同一个助手可被多次选择。",
-    "memberHint": "没有合适的助手当队员？创建后可让 Leader 在对话中创建临时队员。"
+    "memberHint": "没有合适的助手当队员？创建后可让 Leader 在对话中创建临时队员。",
+    "selectProject": "选择项目",
+    "noProjects": "暂无项目",
+    "projectLabel": "项目"
   },
   "removeAgent": {
     "confirmTitle": "移除团队成员",
@@ -189,5 +191,16 @@
       "idle_notification": "空闲通知",
       "shutdown_request": "关闭请求"
     }
+  },
+  "project": {
+    "unassigned": "未分配项目",
+    "assigned": "已分配项目",
+    "assignFailed": "分配项目失败",
+    "assignProject": "分配项目",
+    "switch": "切换项目",
+    "switchTitle": "切换项目？",
+    "switchConfirm": "切换团队项目将重置每个队友的会话上下文。此操作无法撤销。",
+    "switched": "项目已切换",
+    "switchFailed": "切换项目失败"
   }
 }

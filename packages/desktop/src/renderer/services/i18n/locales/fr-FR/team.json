@@ -67,13 +67,15 @@
     "selectOneLeader": "Sélectionnez un chef d'équipe",
     "subtitle": "Faites collaborer plusieurs assistants IA en équipe. Nous conseillons qu'une équipe se concentre sur un seul objectif — créez des équipes distinctes pour des tâches différentes.",
     "nameLabel": "Nom de l'équipe",
-    "workspaceLabel": "Espace de travail",
     "allAssistantsWithCount": "Tous les assistants ({{count}})",
     "selectedMembersWithCount": "Membres sélectionnés {{count}} · ⚑ = Chef",
     "selectedMembersTitleWithCount": "Membres sélectionnés {{count}}",
     "leaderLegend": "= Chef",
     "membersHelper": "Choisissez les membres et désignez un chef. Le même assistant peut être sélectionné plusieurs fois.",
-    "memberHint": "Aucun assistant adapté comme membre ? Après la création, laissez le chef créer des membres temporaires dans la discussion."
+    "memberHint": "Aucun assistant adapté comme membre ? Après la création, laissez le chef créer des membres temporaires dans la discussion.",
+    "selectProject": "Sélectionner un projet",
+    "noProjects": "Aucun projet pour le moment",
+    "projectLabel": "Projet"
   },
   "removeAgent": {
     "confirmTitle": "Retirer un membre de l'équipe",
@@ -189,5 +191,16 @@
       "idle_notification": "Notif. d’inactivité",
       "shutdown_request": "Demande d’arrêt"
     }
+  },
+  "project": {
+    "unassigned": "Aucun projet",
+    "assigned": "Projet attribué",
+    "assignFailed": "Échec de l'attribution du projet",
+    "assignProject": "Attribuer un projet",
+    "switch": "Changer de projet",
+    "switchTitle": "Changer de projet ?",
+    "switchConfirm": "Changer le projet de l'équipe réinitialisera le contexte de conversation de chaque membre. Cette action est irréversible.",
+    "switched": "Projet changé",
+    "switchFailed": "Échec du changement de projet"
   }
 }

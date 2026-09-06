@@ -67,13 +67,15 @@
     "selectOneLeader": "Select one Team Leader",
     "subtitle": "Let multiple AI assistants team up and collaborate. We suggest one team focuses on a single goal — create separate teams for different tasks.",
     "nameLabel": "Team name",
-    "workspaceLabel": "Workspace",
     "allAssistantsWithCount": "All assistants ({{count}})",
     "selectedMembersWithCount": "Selected members {{count}} · ⚑ = Leader",
     "selectedMembersTitleWithCount": "Selected members {{count}}",
     "leaderLegend": "= Leader",
     "membersHelper": "Choose team members and assign one Leader. The same assistant can be selected multiple times.",
-    "memberHint": "No suitable assistant as a member? After creation, let the Leader create temporary team members in chat."
+    "memberHint": "No suitable assistant as a member? After creation, let the Leader create temporary team members in chat.",
+    "selectProject": "Seleccionar proyecto",
+    "noProjects": "Aún no hay proyectos",
+    "projectLabel": "Proyecto"
   },
   "removeAgent": {
     "confirmTitle": "Quitar miembro del equipo",
@@ -189,5 +191,16 @@
       "idle_notification": "Aviso de inactividad",
       "shutdown_request": "Solicitud de cierre"
     }
+  },
+  "project": {
+    "unassigned": "Sin proyecto",
+    "assigned": "Proyecto asignado",
+    "assignFailed": "Error al asignar el proyecto",
+    "assignProject": "Asignar un proyecto",
+    "switch": "Cambiar de proyecto",
+    "switchTitle": "¿Cambiar de proyecto?",
+    "switchConfirm": "Cambiar el proyecto del equipo restablecerá el contexto de conversación de cada miembro. Esta acción no se puede deshacer.",
+    "switched": "Proyecto cambiado",
+    "switchFailed": "Error al cambiar de proyecto"
   }
 }

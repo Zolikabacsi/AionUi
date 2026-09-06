@@ -4,7 +4,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 import React, { useState } from 'react';
-import { Dropdown, Modal, Message } from '@arco-design/web-react';
+import { Button, Dropdown, Modal, Message } from '@arco-design/web-react';
+import { Down, FolderOpen } from '@icon-park/react';
 import useSWR, { useSWRConfig } from 'swr';
 import { useTranslation } from 'react-i18next';
 import { ipcBridge } from '@/common';
@@ -25,7 +26,6 @@ export type TeamProjectSwitcherProps = {
 const TeamProjectSwitcher: React.FC<TeamProjectSwitcherProps> = ({ team }) => {
   const { t } = useTranslation();
   const { mutate } = useSWRConfig();
-  const [open, setOpen] = useState(false);
   const [pending, setPending] = useState(false);
 
   // Reuse the sidebar read model to resolve current project name + workspace.
@@ -61,13 +61,11 @@ const TeamProjectSwitcher: React.FC<TeamProjectSwitcherProps> = ({ team }) => {
         console.error(err);
       } finally {
         setPending(false);
-        setOpen(false);
       }
       return;
     }
 
     if (newProjectId === team.project_id) {
-      setOpen(false);
       return;
     }
 
@@ -99,33 +97,25 @@ const TeamProjectSwitcher: React.FC<TeamProjectSwitcherProps> = ({ team }) => {
     });
   };
 
+  const droplist = (
+    <div className='p-8px' style={{ minWidth: 260 }}>
+      <ProjectSelect
+        value={team.project_id ?? null}
+        onChange={(v) => handleSwitch(v)}
+        placeholder={t('team.project.assignProject', { defaultValue: 'Assign a project' })}
+        allowClear={false}
+        className='w-full'
+      />
+    </div>
+  );
+
   return (
-    <Dropdown
-      trigger='click'
-      visible={open}
-      onVisibleChange={setOpen}
-      disabled={pending}
-      droplist={
-        <div className='p-8px' style={{ minWidth: 260 }}>
-          <ProjectSelect
-            value={team.project_id ?? null}
-            onChange={(v) => handleSwitch(v)}
-            placeholder={t('team.project.assignProject', { defaultValue: 'Assign a project' })}
-            allowClear={false}
-            className='w-full'
-          />
-        </div>
-      }
-    >
-      <button
-        type='button'
-        className='flex items-center gap-6px rounded-6px border border-border-2 bg-bg-2 px-10px py-4px text-12px text-t-secondary hover:border-primary-6 hover:text-primary-6 disabled:opacity-60'
-        disabled={pending}
-      >
-        <span className='i-[folder]' aria-hidden />
+    <Dropdown trigger='click' droplist={droplist} disabled={pending}>
+      <Button type='text' size='mini' loading={pending} className='flex items-center gap-6px !px-10px'>
+        <FolderOpen theme='outline' size={14} fill='currentColor' />
         <span>{label}</span>
-        <span aria-hidden>▾</span>
-      </button>
+        <Down theme='outline' size={12} fill='currentColor' />
+      </Button>
     </Dropdown>
   );
 };

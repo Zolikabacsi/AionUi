@@ -67,13 +67,15 @@
     "selectOneLeader": "Select one Team Leader",
     "subtitle": "Let multiple AI assistants team up and collaborate. We suggest one team focuses on a single goal — create separate teams for different tasks.",
     "nameLabel": "Team name",
-    "workspaceLabel": "Workspace",
     "allAssistantsWithCount": "All assistants ({{count}})",
     "selectedMembersWithCount": "Selected members {{count}} · ⚑ = Leader",
     "selectedMembersTitleWithCount": "Selected members {{count}}",
     "leaderLegend": "= Leader",
     "membersHelper": "Choose team members and assign one Leader. The same assistant can be selected multiple times.",
-    "memberHint": "No suitable assistant as a member? After creation, let the Leader create temporary team members in chat."
+    "memberHint": "No suitable assistant as a member? After creation, let the Leader create temporary team members in chat.",
+    "selectProject": "Оберіть проєкт",
+    "noProjects": "Проєктів поки немає",
+    "projectLabel": "Проєкт"
   },
   "removeAgent": {
     "confirmTitle": "Видалити учасника команди",
@@ -191,5 +193,16 @@
       "idle_notification": "Сповіщення про простій",
       "shutdown_request": "Запит на зупинку"
     }
+  },
+  "project": {
+    "unassigned": "Проєкт не призначено",
+    "assigned": "Проєкт призначено",
+    "assignFailed": "Не вдалося призначити проєкт",
+    "assignProject": "Призначити проєкт",
+    "switch": "Змінити проєкт",
+    "switchTitle": "Змінити проєкт?",
+    "switchConfirm": "Зміна проєкту команди скине контекст діалогу кожного учасника. Цю дію неможливо скасувати.",
+    "switched": "Проєкт змінено",
+    "switchFailed": "Не вдалося змінити проєкт"
   }
 }
