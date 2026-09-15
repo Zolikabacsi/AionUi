@@ -336,7 +336,7 @@ export type TeamEngagementMember = {
   template_slot: string;
   role: string;
   conversation_id: string;
-  status: string | null;
+  status?: string | null;
 };
 
 /** One entry of the unified team activity feed (matches backend TeamActivityItemResponse). */

@@ -58,6 +58,15 @@ vi.mock('swr', () => ({
         isLoading: false,
       };
     }
+    if (Array.isArray(key) && key[0] === 'team-engagements') {
+      return {
+        data: [
+          { id: 'e1', team_id: 't1', project_id: 'p1', status: 'active', created_at: 1, updated_at: 1 },
+          { id: 'e2', team_id: 't1', project_id: 'p2', status: 'archived', created_at: 2, updated_at: 2 },
+        ],
+        isLoading: false,
+      };
+    }
     return { data: undefined, isLoading: false };
   },
   useSWRConfig: () => ({ mutate }),
@@ -118,6 +127,10 @@ describe('TeamEngagementSelector', () => {
     await waitFor(() => expect(createEngagement).toHaveBeenCalledWith({ team_id: 't1', project_id: 'p9' }));
     await waitFor(() => expect(onSelect).toHaveBeenCalledWith(expect.objectContaining({ id: 'e3' })));
     expect(getSelectedEngagement('t1')).toBe('e3');
+    // The create must refresh the SHARED engagements cache TeamPage reads from
+    // (not just the selector's private state), or the page keeps the previous
+    // project/workspace while the store points at the new engagement.
+    expect(mutate).toHaveBeenCalledWith(['team-engagements', 't1']);
     expect(Message.success).toHaveBeenCalled();
   });
 

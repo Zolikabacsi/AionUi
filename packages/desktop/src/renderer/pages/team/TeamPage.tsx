@@ -1002,11 +1002,13 @@ const TeamPage: React.FC<Props> = ({ team }) => {
     },
     { revalidateOnFocus: false }
   );
-  const rawSelectedEngagementId = useSelectedEngagementId(team.id);
+  // Subscribe to the store so a selection change in the selector re-renders this
+  // page; `resolveEngagementSelection` re-reads the raw selection each render.
+  useSelectedEngagementId(team.id);
   const resolvedEngagementId = resolveEngagementSelection(team.id, engagements ?? [], team.project_id ?? null);
   const selectedEngagement = useMemo(
     () => (engagements ?? []).find((engagement) => engagement.id === resolvedEngagementId) ?? null,
-    [engagements, resolvedEngagementId, rawSelectedEngagementId]
+    [engagements, resolvedEngagementId]
   );
 
   // Engagement-scoped member rows (D2). Only fetched once an engagement is

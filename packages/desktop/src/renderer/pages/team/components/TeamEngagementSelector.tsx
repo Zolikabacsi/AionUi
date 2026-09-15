@@ -3,10 +3,10 @@
  * Copyright 2025 AionUi (aionui.com)
  * SPDX-License-Identifier: Apache-2.0
  */
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { Button, Divider, Dropdown, Menu, Message, Typography } from '@arco-design/web-react';
 import { Down, FolderOpen } from '@icon-park/react';
-import useSWR from 'swr';
+import useSWR, { useSWRConfig } from 'swr';
 import { useTranslation } from 'react-i18next';
 import { ipcBridge } from '@/common';
 import ProjectSelect from './ProjectSelect';
@@ -37,7 +37,7 @@ export type TeamEngagementSelectorProps = {
  */
 const TeamEngagementSelector: React.FC<TeamEngagementSelectorProps> = ({ team, onSelect }) => {
   const { t } = useTranslation();
-  const [engagements, setEngagements] = useState<TeamEngagement[]>([]);
+  const { mutate } = useSWRConfig();
   const [creating, setCreating] = useState(false);
   const [pending, setPending] = useState(false);
   const selectedId = useSelectedEngagementId(team.id);
@@ -57,21 +57,21 @@ const TeamEngagementSelector: React.FC<TeamEngagementSelectorProps> = ({ team, o
     [projects]
   );
 
-  useEffect(() => {
-    let alive = true;
-    const load = async () => {
-      try {
-        const list = await ipcBridge.team.listEngagements.invoke({ team_id: team.id });
-        if (alive) setEngagements(list);
-      } catch (err) {
-        console.error(err);
-      }
-    };
-    void load();
-    return () => {
-      alive = false;
-    };
-  }, [team.id]);
+  // Shared source of truth with `TeamPage` (key `['team-engagements', team.id]`):
+  // the page derives the selected engagement from this cache, so the selector
+  // reads it too and `mutate`s it after a create to make the new engagement
+  // resolvable — otherwise the store's selected id would be rejected as stale
+  // and the page would keep the previous project/workspace.
+  const engagementsKey = ['team-engagements', team.id];
+  const { data } = useSWR<TeamEngagement[]>(team.id ? engagementsKey : null, async () => {
+    try {
+      return await ipcBridge.team.listEngagements.invoke({ team_id: team.id });
+    } catch (err) {
+      console.error(err);
+      return [];
+    }
+  });
+  const engagements = data ?? [];
 
   const effectiveId = selectedId ?? resolveEngagementSelection(team.id, engagements, team.project_id ?? null);
   const current = engagements.find((e) => e.id === effectiveId);
@@ -94,7 +94,9 @@ const TeamEngagementSelector: React.FC<TeamEngagementSelectorProps> = ({ team, o
       try {
         setPending(true);
         const created = await ipcBridge.team.createEngagement.invoke({ team_id: team.id, project_id: projectId });
-        setEngagements((prev) => (prev.some((e) => e.id === created.id) ? prev : [...prev, created]));
+        // Refresh the shared cache first so the new engagement is present when
+        // `TeamPage` resolves the selection, then publish the selection.
+        await mutate(engagementsKey);
         select(created);
         Message.success(t('team.engagement.created', { defaultValue: 'Engagement created' }));
       } catch (err) {
@@ -104,7 +106,7 @@ const TeamEngagementSelector: React.FC<TeamEngagementSelectorProps> = ({ team, o
         setPending(false);
       }
     },
-    [team.id, select, t]
+    [team.id, select, t, mutate]
   );
 
   const droplist = (

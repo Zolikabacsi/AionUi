@@ -5,25 +5,32 @@
  */
 
 import React from 'react';
-import { render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { MemoryRouter } from 'react-router-dom';
 import type { TChatConversation } from '@/common/config/storage';
 import type { TTeam } from '@/common/types/team/teamTypes';
 
-const { getConversationOrNullMock, ensureSessionMock, listEngagementsMock, listEngagementMembersMock, makeChannel } =
-  vi.hoisted(() => {
-    const makeChannel = (_name: string) => ({
-      on: vi.fn(() => vi.fn()),
-    });
-    return {
-      getConversationOrNullMock: vi.fn(),
-      ensureSessionMock: vi.fn(async () => undefined),
-      listEngagementsMock: vi.fn(async () => [] as unknown[]),
-      listEngagementMembersMock: vi.fn(async () => [] as unknown[]),
-      makeChannel,
-    };
+const {
+  getConversationOrNullMock,
+  ensureSessionMock,
+  listEngagementsMock,
+  listEngagementMembersMock,
+  createEngagementMock,
+  makeChannel,
+} = vi.hoisted(() => {
+  const makeChannel = (_name: string) => ({
+    on: vi.fn(() => vi.fn()),
   });
+  return {
+    getConversationOrNullMock: vi.fn(),
+    ensureSessionMock: vi.fn(async () => undefined),
+    listEngagementsMock: vi.fn(async () => [] as unknown[]),
+    listEngagementMembersMock: vi.fn(async () => [] as unknown[]),
+    createEngagementMock: vi.fn(async () => ({}) as unknown),
+    makeChannel,
+  };
+});
 
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
@@ -59,6 +66,7 @@ vi.mock('@/common', () => ({
       ensureSession: { invoke: (...args: unknown[]) => ensureSessionMock(...args) },
       listEngagements: { invoke: (arg: unknown) => listEngagementsMock(arg) },
       listEngagementMembers: { invoke: (arg: unknown) => listEngagementMembersMock(arg) },
+      createEngagement: { invoke: (arg: unknown) => createEngagementMock(arg) },
       agentStatusChanged: makeChannel('agentStatusChanged'),
       agentSpawned: makeChannel('agentSpawned'),
       agentRemoved: makeChannel('agentRemoved'),
@@ -169,6 +177,14 @@ vi.mock('@renderer/pages/conversation/components/ChatSlider.tsx', () => ({
 vi.mock('@/renderer/pages/cron', () => ({ CronJobManager: () => <div /> }));
 vi.mock('@/renderer/pages/conversation/Preview/context/PreviewContext', () => ({
   usePreviewContext: () => ({ closePreview: () => {}, closePreviewIfScopeChanged: () => {} }),
+}));
+
+// Stub the project picker: a button that chooses the new engagement's project.
+vi.mock('@/renderer/pages/team/components/ProjectSelect', () => ({
+  __esModule: true,
+  default: ({ onChange }: { onChange: (id: string | null) => void }) => (
+    <button onClick={() => onChange('proj-new')}>select-project</button>
+  ),
 }));
 
 const setCurrentProjectMock = vi.fn();
@@ -297,5 +313,50 @@ describe('TeamPage engagement wiring', () => {
     // pointed at any conversation.
     await waitFor(() => expect(setCurrentConversationMock).toHaveBeenCalledWith(null));
     expect(listEngagementMembersMock).not.toHaveBeenCalled();
+  });
+
+  it('binds the page after creating a new engagement (create -> bind, not just store set)', async () => {
+    const eNew = {
+      id: 'e-new',
+      team_id: 'team-create',
+      project_id: 'proj-new',
+      workspace: '/ws-new',
+      process: 'hierarchical',
+      status: 'active',
+      created_at: 10,
+      updated_at: 10,
+    };
+    // The shared `['team-engagements', team.id]` cache is empty until the create
+    // resolves and the selector mutates the cache — this is the exact seam the
+    // private-list version broke (page kept the old project while the store
+    // pointed at the new engagement).
+    let created = false;
+    listEngagementsMock.mockImplementation(async () => (created ? [eNew] : []));
+    createEngagementMock.mockImplementation(async () => {
+      created = true;
+      return eNew;
+    });
+
+    render(
+      <MemoryRouter>
+        <TeamPage team={team('team-create')} />
+      </MemoryRouter>
+    );
+
+    // Before any engagement exists, the page is on the legacy (no-project) path.
+    await waitFor(() => expect(setCurrentProjectMock).toHaveBeenCalledWith(null));
+
+    // Drive the selector's create flow.
+    fireEvent.click(await screen.findByText('No engagement'));
+    fireEvent.click(await screen.findByText('New engagement…'));
+    fireEvent.click(await screen.findByText('select-project'));
+
+    // After the shared cache is mutated, TeamPage resolves the new engagement and
+    // rebinds project + workspace to it.
+    await waitFor(() =>
+      expect(createEngagementMock).toHaveBeenCalledWith({ team_id: 'team-create', project_id: 'proj-new' })
+    );
+    await waitFor(() => expect(setCurrentProjectMock).toHaveBeenCalledWith('proj-new'));
+    await waitFor(() => expect(screen.getByTestId('workspace-path').textContent).toBe('/ws-new'));
   });
 });
