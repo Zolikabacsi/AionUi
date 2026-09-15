@@ -202,5 +202,16 @@
     "switchConfirm": "Cambiar el proyecto del equipo restablecerá el contexto de conversación de cada miembro. Esta acción no se puede deshacer.",
     "switched": "Proyecto cambiado",
     "switchFailed": "Error al cambiar de proyecto"
+  },
+  "engagement": {
+    "label": "Compromiso",
+    "new": "Nuevo compromiso…",
+    "select": "Seleccionar compromiso",
+    "selectProject": "Seleccionar un proyecto",
+    "empty": "Aún no hay compromisos",
+    "unassigned": "Sin compromiso",
+    "created": "Compromiso creado",
+    "createFailed": "Error al crear el compromiso",
+    "archived": "Archivado"
   }
 }

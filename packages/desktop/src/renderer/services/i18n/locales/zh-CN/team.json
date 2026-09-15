@@ -202,5 +202,16 @@
     "switchConfirm": "切换团队项目将重置每个队友的会话上下文。此操作无法撤销。",
     "switched": "项目已切换",
     "switchFailed": "切换项目失败"
+  },
+  "engagement": {
+    "label": "协作项目",
+    "new": "新建协作项目…",
+    "select": "选择协作项目",
+    "selectProject": "选择一个项目",
+    "empty": "暂无协作项目",
+    "unassigned": "未指定协作项目",
+    "created": "协作项目已创建",
+    "createFailed": "创建协作项目失败",
+    "archived": "已归档"
   }
 }

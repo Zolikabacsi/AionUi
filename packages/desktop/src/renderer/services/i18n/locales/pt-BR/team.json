@@ -202,5 +202,16 @@
     "switchConfirm": "Trocar o projeto da equipe redefinirá o contexto de conversa de cada membro. Isso não pode ser desfeito.",
     "switched": "Projeto trocado",
     "switchFailed": "Falha ao trocar projeto"
+  },
+  "engagement": {
+    "label": "Compromisso",
+    "new": "Novo compromisso…",
+    "select": "Selecionar compromisso",
+    "selectProject": "Selecionar um projeto",
+    "empty": "Nenhum compromisso ainda",
+    "unassigned": "Sem compromisso",
+    "created": "Compromisso criado",
+    "createFailed": "Falha ao criar o compromisso",
+    "archived": "Arquivado"
   }
 }

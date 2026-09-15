@@ -12,6 +12,7 @@ export const TEAM_STORAGE_PREFIXES = [
   'team-assistant-order-',
   'team-pending-permissions-',
   'team-activity-controls-',
+  'team-engagement-',
 ] as const;
 
 /**

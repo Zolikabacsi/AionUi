@@ -202,5 +202,16 @@
     "switchConfirm": "Takım projesini değiştirmek her takım arkadaşının sohbet bağlamını sıfırlar. Bu işlem geri alınamaz.",
     "switched": "Proje değiştirildi",
     "switchFailed": "Proje değiştirilemedi"
+  },
+  "engagement": {
+    "label": "Taahhüt",
+    "new": "Yeni taahhüt…",
+    "select": "Taahhüt seç",
+    "selectProject": "Bir proje seç",
+    "empty": "Henüz taahhüt yok",
+    "unassigned": "Taahhüt yok",
+    "created": "Taahhüt oluşturuldu",
+    "createFailed": "Taahhüt oluşturulamadı",
+    "archived": "Arşivlendi"
   }
 }

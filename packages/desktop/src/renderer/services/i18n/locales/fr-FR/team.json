@@ -202,5 +202,16 @@
     "switchConfirm": "Changer le projet de l'équipe réinitialisera le contexte de conversation de chaque membre. Cette action est irréversible.",
     "switched": "Projet changé",
     "switchFailed": "Échec du changement de projet"
+  },
+  "engagement": {
+    "label": "Engagement",
+    "new": "Nouvel engagement…",
+    "select": "Sélectionner un engagement",
+    "selectProject": "Sélectionner un projet",
+    "empty": "Aucun engagement",
+    "unassigned": "Aucun engagement",
+    "created": "Engagement créé",
+    "createFailed": "Échec de la création de l’engagement",
+    "archived": "Archivé"
   }
 }
