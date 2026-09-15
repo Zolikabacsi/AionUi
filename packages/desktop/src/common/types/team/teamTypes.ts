@@ -307,6 +307,36 @@ export type ITeamTaskItem = {
   blocks: string[];
   created_at: number;
   updated_at: number;
+  expected_output?: string;
+  result?: string;
+  input_context?: string;
+};
+
+/** Orchestration strategy for an engagement */
+export type EngagementProcess = 'sequential' | 'hierarchical';
+
+/** Lifecycle status of an engagement */
+export type EngagementStatus = 'active' | 'archived';
+
+/** Persisted engagement record linking a team to a project (matches backend TeamEngagement). */
+export type TeamEngagement = {
+  id: string;
+  team_id: string;
+  project_id: string;
+  workspace: string;
+  process: EngagementProcess;
+  status: EngagementStatus;
+  created_at: number;
+  updated_at: number;
+};
+
+/** One member slot bound to an engagement (matches backend TeamEngagementMember). */
+export type TeamEngagementMember = {
+  slot_id: string;
+  template_slot: string;
+  role: string;
+  conversation_id: string;
+  status: string | null;
 };
 
 /** One entry of the unified team activity feed (matches backend TeamActivityItemResponse). */
