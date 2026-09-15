@@ -59,12 +59,15 @@ const TeamEngagementSelector: React.FC<TeamEngagementSelectorProps> = ({ team, o
 
   useEffect(() => {
     let alive = true;
-    ipcBridge.team.listEngagements
-      .invoke({ team_id: team.id })
-      .then((list) => {
+    const load = async () => {
+      try {
+        const list = await ipcBridge.team.listEngagements.invoke({ team_id: team.id });
         if (alive) setEngagements(list);
-      })
-      .catch((err) => console.error(err));
+      } catch (err) {
+        console.error(err);
+      }
+    };
+    void load();
     return () => {
       alive = false;
     };
