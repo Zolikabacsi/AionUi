@@ -6,7 +6,13 @@ import useSWR, { useSWRConfig } from 'swr';
 import { useAuth } from '@renderer/hooks/context/AuthContext';
 import { useLayoutContext } from '@/renderer/hooks/context/LayoutContext';
 import { ipcBridge } from '@/common';
-import type { ITeamSlotWork, TeamAssistant, TeamContextResetAvailability, TTeam } from '@/common/types/team/teamTypes';
+import type {
+  ITeamSlotWork,
+  TeamAssistant,
+  TeamContextResetAvailability,
+  TeamEngagement,
+  TTeam,
+} from '@/common/types/team/teamTypes';
 import type { IProvider, TChatConversation, TProviderWithModel } from '@/common/config/storage';
 import {
   classifyConfigSetError,
@@ -40,6 +46,9 @@ import { useTeamRunView, type TeamRunViewState } from './hooks/useTeamRunView';
 import { getConversationOrNull } from '@/renderer/pages/conversation/utils/conversationCache';
 import { useActiveLease } from '@/renderer/pages/conversation/hooks/useActiveLease';
 import { resolveTeamWorkspaceView } from './utils/teamWorkspaceView';
+import { joinEngagementMembers } from './utils/teamEngagementMembers';
+import TeamEngagementSelector from './components/TeamEngagementSelector';
+import { resolveEngagementSelection, useSelectedEngagementId } from './engagementSelectionStore';
 import { usePreviewContext } from '@/renderer/pages/conversation/Preview';
 import { previewScopeKey } from '@/renderer/pages/conversation/Preview/context/previewScope';
 import { setCurrentProject } from '@/renderer/pages/conversation/explorer/currentProjectStore';
@@ -60,6 +69,9 @@ function isAcpLikeBackend(backend: string | undefined): boolean {
 
 type TeamPageContentProps = {
   team: TTeam;
+  /** Active engagement (Phase 5b). When non-null the page binds its project /
+   *  workspace / explorer to this engagement; null preserves the legacy path. */
+  selectedEngagement: TeamEngagement | null;
   onRenameTeam: (new_name: string) => Promise<boolean>;
   warmupPhase: TeamWarmupPhase;
   warmupRuntimeStatus: Map<string, TeamWarmupMemberState>;
@@ -533,6 +545,7 @@ const AssistantChatSlot: React.FC<{
 /** Inner component that reads active tab from context and renders the chat layout */
 const TeamPageContent: React.FC<TeamPageContentProps> = ({
   team,
+  selectedEngagement,
   onRenameTeam,
   warmupPhase,
   warmupRuntimeStatus,
@@ -589,11 +602,14 @@ const TeamPageContent: React.FC<TeamPageContentProps> = ({
   const snapshotTeamProjectId = leaderConversationIdForProject
     ? getSnapshotConversationProjectId(leaderConversationIdForProject)
     : undefined;
-  const teamProjectId = team.project_id
+  const legacyTeamProjectId = team.project_id
     ? team.project_id
     : snapshotTeamProjectId !== undefined
       ? snapshotTeamProjectId
       : (dispatchConversation?.project_id ?? null);
+  // When an engagement is selected the page runs on that engagement's project;
+  // otherwise the legacy team-scoped derivation above is used verbatim.
+  const teamProjectId = selectedEngagement ? selectedEngagement.project_id : legacyTeamProjectId;
 
   // Publish the team's project so the Layout-level Explorer host renders it —
   // mirrors conversation/index.tsx (project-scoped, persistent across agent-tab
@@ -628,7 +644,8 @@ const TeamPageContent: React.FC<TeamPageContentProps> = ({
     team.workspace,
     (dispatchConversation?.extra as { workspace?: string } | undefined)?.workspace
   );
-  const effectiveWorkspace = teamWorkspaceView.workspacePath;
+  // Selected engagement wins the workspace binding; legacy path is verbatim.
+  const effectiveWorkspace = selectedEngagement ? selectedEngagement.workspace : teamWorkspaceView.workspacePath;
   // For project teams the file panel is the Layout-level Explorer host (gated on
   // project_id), so ChatLayout's own workspace sider is disabled — mirrors
   // ChatConversation's `workspaceEnabled && !project_id`.
@@ -653,6 +670,7 @@ const TeamPageContent: React.FC<TeamPageContentProps> = ({
         <div className='flex items-center justify-between'>
           <span className='text-16px font-bold text-t-primary'>{t('conversation.workspace.title')}</span>
         </div>
+        <TeamEngagementSelector team={team} />
         <TeamProjectSwitcher team={team} />
       </div>
     ),
@@ -967,7 +985,56 @@ const TeamPage: React.FC<Props> = ({ team }) => {
     useTeamSession(team, warmupPhase);
   const { user } = useAuth();
   const { mutate: globalMutate } = useSWRConfig();
-  const defaultSlotId = team.assistants[0]?.slot_id ?? '';
+
+  // Phase 5b: resolve the team's selected engagement. The engagement path is
+  // additive — when a team has no engagements (or the bridge is unavailable)
+  // `selectedEngagement` is null and every downstream binding keeps its legacy,
+  // team-scoped behavior.
+  const { data: engagements } = useSWR(
+    team.id ? ['team-engagements', team.id] : null,
+    async () => {
+      try {
+        return await ipcBridge.team.listEngagements.invoke({ team_id: team.id });
+      } catch (error) {
+        console.error('Failed to list team engagements:', error);
+        return [];
+      }
+    },
+    { revalidateOnFocus: false }
+  );
+  // Subscribe to the store so a selection change in the selector re-renders this
+  // page; `resolveEngagementSelection` re-reads the raw selection each render.
+  useSelectedEngagementId(team.id);
+  const resolvedEngagementId = resolveEngagementSelection(team.id, engagements ?? [], team.project_id ?? null);
+  const selectedEngagement = useMemo(
+    () => (engagements ?? []).find((engagement) => engagement.id === resolvedEngagementId) ?? null,
+    [engagements, resolvedEngagementId]
+  );
+
+  // Engagement-scoped member rows (D2). Only fetched once an engagement is
+  // active — SWR key includes engagement_id so switching refetches; a legacy
+  // team (null engagement) never fires the request and shows team.assistants.
+  const selectedEngagementId = selectedEngagement?.id;
+  const { data: engagementMembers } = useSWR(
+    selectedEngagementId ? ['team-engagement-members', team.id, selectedEngagementId] : null,
+    async () => {
+      try {
+        return await ipcBridge.team.listEngagementMembers.invoke({
+          team_id: team.id,
+          engagement_id: selectedEngagementId,
+        });
+      } catch (error) {
+        console.error('Failed to list engagement members:', error);
+        return [];
+      }
+    },
+    { revalidateOnFocus: false }
+  );
+  const displayAssistants = useMemo(
+    () => joinEngagementMembers(team.assistants, selectedEngagement ? (engagementMembers ?? []) : null),
+    [team.assistants, selectedEngagement, engagementMembers]
+  );
+  const defaultSlotId = displayAssistants[0]?.slot_id ?? '';
 
   const handleRemoveAssistantWithConfirm = useCallback(
     (slot_id: string) => {
@@ -1015,7 +1082,7 @@ const TeamPage: React.FC<Props> = ({ team }) => {
 
   return (
     <TeamTabsProvider
-      assistants={team.assistants}
+      assistants={displayAssistants}
       statusMap={statusMap}
       defaultActiveSlotId={defaultSlotId}
       team_id={team.id}
@@ -1026,6 +1093,7 @@ const TeamPage: React.FC<Props> = ({ team }) => {
     >
       <TeamPageContent
         team={team}
+        selectedEngagement={selectedEngagement}
         onRenameTeam={handleRenameTeam}
         warmupPhase={warmupPhase}
         warmupRuntimeStatus={warmupRuntimeStatus}

@@ -202,5 +202,16 @@
     "switchConfirm": "切換團隊專案將重設每個隊友的對話脈絡。此操作無法復原。",
     "switched": "專案已切換",
     "switchFailed": "切換專案失敗"
+  },
+  "engagement": {
+    "label": "協作專案",
+    "new": "新建協作專案…",
+    "select": "選擇協作專案",
+    "selectProject": "選擇一個專案",
+    "empty": "尚無協作專案",
+    "unassigned": "未指定協作專案",
+    "created": "協作專案已建立",
+    "createFailed": "建立協作專案失敗",
+    "archived": "已封存"
   }
 }

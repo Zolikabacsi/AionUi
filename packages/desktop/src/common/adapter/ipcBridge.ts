@@ -82,6 +82,10 @@ import type {
   TTeam,
   TeamAssistant,
   TeamContextResetResponse,
+  TeamEngagement,
+  TeamEngagementMember,
+  EngagementProcess,
+  EngagementStatus,
 } from '../types/team/teamTypes';
 import type {
   AutoUpdateReadyResult,
@@ -2313,6 +2317,30 @@ export const team = {
       (p) => ({ project_id: p.project_id })
     ),
     fromBackendTeam
+  ),
+  listEngagements: httpGet<TeamEngagement[], { team_id: string }>((p) => `/api/teams/${p.team_id}/engagements`),
+  createEngagement: httpPost<TeamEngagement, { team_id: string; project_id: string }>(
+    (p) => `/api/teams/${p.team_id}/engagements`,
+    (p) => ({ project_id: p.project_id })
+  ),
+  updateEngagement: httpPatch<
+    TeamEngagement,
+    { team_id: string; engagement_id: string; process?: EngagementProcess; status?: EngagementStatus }
+  >(
+    (p) => `/api/teams/${p.team_id}/engagements/${p.engagement_id}`,
+    (p) => ({
+      ...(p.process ? { process: p.process } : {}),
+      ...(p.status ? { status: p.status } : {}),
+    })
+  ),
+  listEngagementMembers: httpGet<TeamEngagementMember[], { team_id: string; engagement_id: string }>(
+    (p) => `/api/teams/${p.team_id}/engagements/${p.engagement_id}/members`
+  ),
+  listEngagementTasks: httpGet<ITeamTaskItem[], { team_id: string; engagement_id: string }>(
+    (p) => `/api/teams/${p.team_id}/engagements/${p.engagement_id}/tasks`
+  ),
+  listEngagementMailbox: httpGet<ITeamMailboxMessage[], { team_id: string; engagement_id: string }>(
+    (p) => `/api/teams/${p.team_id}/engagements/${p.engagement_id}/mailbox`
   ),
   setSessionMode: httpPost<void, { team_id: string; session_mode: string }>(
     (p) => `/api/teams/${p.team_id}/session-mode`,

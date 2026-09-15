@@ -202,5 +202,16 @@
     "switchConfirm": "Switching the team project will reset each teammate conversation context. This cannot be undone.",
     "switched": "Project switched",
     "switchFailed": "Failed to switch project"
+  },
+  "engagement": {
+    "label": "Engagement",
+    "new": "New engagement…",
+    "select": "Select engagement",
+    "selectProject": "Select a project",
+    "empty": "No engagements yet",
+    "unassigned": "No engagement",
+    "created": "Engagement created",
+    "createFailed": "Failed to create engagement",
+    "archived": "Archived"
   }
 }

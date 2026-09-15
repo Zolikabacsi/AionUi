@@ -158,4 +158,76 @@ describe('ipcBridge team adapter', () => {
     });
     expect(JSON.stringify(httpBridgeMocks.calls.at(-1)?.body)).not.toContain('assistants');
   });
+
+  it('listEngagements calls GET /api/teams/{team_id}/engagements', async () => {
+    const { team } = await import('@/common/adapter/ipcBridge');
+
+    await team.listEngagements.invoke({ team_id: 'team-1' });
+
+    expect(httpBridgeMocks.calls).toContainEqual({
+      method: 'GET',
+      path: '/api/teams/team-1/engagements',
+      body: undefined,
+    });
+  });
+
+  it('createEngagement posts the project binding to the engagements route', async () => {
+    const { team } = await import('@/common/adapter/ipcBridge');
+
+    await team.createEngagement.invoke({ team_id: 'team-1', project_id: 'project-1' });
+
+    expect(httpBridgeMocks.calls).toContainEqual({
+      method: 'POST',
+      path: '/api/teams/team-1/engagements',
+      body: { project_id: 'project-1' },
+    });
+  });
+
+  it('updateEngagement patches only the provided fields', async () => {
+    const { team } = await import('@/common/adapter/ipcBridge');
+
+    await team.updateEngagement.invoke({ team_id: 'team-1', engagement_id: 'eng-1', status: 'archived' });
+
+    expect(httpBridgeMocks.calls).toContainEqual({
+      method: 'PATCH',
+      path: '/api/teams/team-1/engagements/eng-1',
+      body: { status: 'archived' },
+    });
+  });
+
+  it('listEngagementMembers calls GET /api/teams/{team_id}/engagements/{eid}/members', async () => {
+    const { team } = await import('@/common/adapter/ipcBridge');
+
+    await team.listEngagementMembers.invoke({ team_id: 'team-1', engagement_id: 'eng-1' });
+
+    expect(httpBridgeMocks.calls).toContainEqual({
+      method: 'GET',
+      path: '/api/teams/team-1/engagements/eng-1/members',
+      body: undefined,
+    });
+  });
+
+  it('listEngagementTasks calls GET /api/teams/{team_id}/engagements/{eid}/tasks', async () => {
+    const { team } = await import('@/common/adapter/ipcBridge');
+
+    await team.listEngagementTasks.invoke({ team_id: 'team-1', engagement_id: 'eng-1' });
+
+    expect(httpBridgeMocks.calls).toContainEqual({
+      method: 'GET',
+      path: '/api/teams/team-1/engagements/eng-1/tasks',
+      body: undefined,
+    });
+  });
+
+  it('listEngagementMailbox calls GET /api/teams/{team_id}/engagements/{eid}/mailbox', async () => {
+    const { team } = await import('@/common/adapter/ipcBridge');
+
+    await team.listEngagementMailbox.invoke({ team_id: 'team-1', engagement_id: 'eng-1' });
+
+    expect(httpBridgeMocks.calls).toContainEqual({
+      method: 'GET',
+      path: '/api/teams/team-1/engagements/eng-1/mailbox',
+      body: undefined,
+    });
+  });
 });

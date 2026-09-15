@@ -202,5 +202,16 @@
     "switchConfirm": "팀 프로젝트를 전환하면 각 팀원의 대화 컨텍스트가 초기화됩니다. 이 작업은 되돌릴 수 없습니다.",
     "switched": "프로젝트가 전환되었습니다",
     "switchFailed": "프로젝트 전환에 실패했습니다"
+  },
+  "engagement": {
+    "label": "엔게이지먼트",
+    "new": "새 엔게이지먼트…",
+    "select": "엔게이지먼트 선택",
+    "selectProject": "프로젝트 선택",
+    "empty": "엔게이지먼트가 없습니다",
+    "unassigned": "엔게이지먼트 미지정",
+    "created": "엔게이지먼트가 생성되었습니다",
+    "createFailed": "엔게이지먼트 생성에 실패했습니다",
+    "archived": "보관됨"
   }
 }

@@ -202,5 +202,16 @@
     "switchConfirm": "Der Wechsel des Teamprojekts setzt den Gesprächskontext jedes Teammitglieds zurück. Dies kann nicht rückgängig gemacht werden.",
     "switched": "Projekt gewechselt",
     "switchFailed": "Projektwechsel fehlgeschlagen"
+  },
+  "engagement": {
+    "label": "Mandats",
+    "new": "Neues Mandat…",
+    "select": "Mandat auswählen",
+    "selectProject": "Projekt auswählen",
+    "empty": "Noch keine Mandate",
+    "unassigned": "Kein Mandat",
+    "created": "Mandat erstellt",
+    "createFailed": "Mandat konnte nicht erstellt werden",
+    "archived": "Archiviert"
   }
 }
