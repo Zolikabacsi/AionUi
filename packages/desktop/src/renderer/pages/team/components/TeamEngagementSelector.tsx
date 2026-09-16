@@ -63,12 +63,14 @@ const TeamEngagementSelector: React.FC<TeamEngagementSelectorProps> = ({ team, o
   // resolvable — otherwise the store's selected id would be rejected as stale
   // and the page would keep the previous project/workspace.
   const engagementsKey = ['team-engagements', team.id];
-  const { data } = useSWR<TeamEngagement[]>(team.id ? engagementsKey : null, async () => {
+  // `null` means "engagement API unavailable" (e.g. an `aioncore` built before
+  // Phase 5a, where the route 404s) — distinct from `[]` (supported, none yet).
+  const { data } = useSWR<TeamEngagement[] | null>(team.id ? engagementsKey : null, async () => {
     try {
       return await ipcBridge.team.listEngagements.invoke({ team_id: team.id });
     } catch (err) {
       console.error(err);
-      return [];
+      return null;
     }
   });
   const engagements = data ?? [];
@@ -108,6 +110,14 @@ const TeamEngagementSelector: React.FC<TeamEngagementSelectorProps> = ({ team, o
     },
     [team.id, select, t, mutate]
   );
+
+  // Hide entirely while the engagement list is still loading, or when the
+  // backend does not expose it (see the fetcher above) — the legacy project
+  // switcher stays the sole control in that case, so an app built against a
+  // pre-5a `aioncore` shows no broken/empty selector.
+  if (data === undefined || data === null) {
+    return null;
+  }
 
   const droplist = (
     <div className='p-4px' style={{ minWidth: 260 }}>

@@ -46,6 +46,12 @@ vi.mock('react-i18next', () => ({
 }));
 
 const mutate = vi.fn(async () => undefined);
+// Configurable so tests can drive the "engagement API unavailable" (null) and
+// "loading" (undefined) branches the real fetcher produces; default = a list.
+let engagementsData: unknown = [
+  { id: 'e1', team_id: 't1', project_id: 'p1', status: 'active', created_at: 1, updated_at: 1 },
+  { id: 'e2', team_id: 't1', project_id: 'p2', status: 'archived', created_at: 2, updated_at: 2 },
+];
 vi.mock('swr', () => ({
   default: (key: unknown) => {
     if (Array.isArray(key) && key[0] === 'sidebar-projects') {
@@ -59,13 +65,7 @@ vi.mock('swr', () => ({
       };
     }
     if (Array.isArray(key) && key[0] === 'team-engagements') {
-      return {
-        data: [
-          { id: 'e1', team_id: 't1', project_id: 'p1', status: 'active', created_at: 1, updated_at: 1 },
-          { id: 'e2', team_id: 't1', project_id: 'p2', status: 'archived', created_at: 2, updated_at: 2 },
-        ],
-        isLoading: false,
-      };
+      return { data: engagementsData, isLoading: false };
     }
     return { data: undefined, isLoading: false };
   },
@@ -98,6 +98,10 @@ describe('TeamEngagementSelector', () => {
     listEngagements.mockClear();
     createEngagement.mockClear();
     mutate.mockClear();
+    engagementsData = [
+      { id: 'e1', team_id: 't1', project_id: 'p1', status: 'active', created_at: 1, updated_at: 1 },
+      { id: 'e2', team_id: 't1', project_id: 'p2', status: 'archived', created_at: 2, updated_at: 2 },
+    ];
     vi.mocked(Message.success).mockClear();
     vi.mocked(Message.error).mockClear();
   });
@@ -132,6 +136,21 @@ describe('TeamEngagementSelector', () => {
     // project/workspace while the store points at the new engagement.
     expect(mutate).toHaveBeenCalledWith(['team-engagements', 't1']);
     expect(Message.success).toHaveBeenCalled();
+  });
+
+  it('hides when the engagement API is unavailable (backend lacks Phase 5a)', async () => {
+    engagementsData = null;
+    const { container } = render(<TeamEngagementSelector team={team} onSelect={vi.fn()} />);
+    // null (unavailable) => no selector control at all (legacy switcher stays).
+    await waitFor(() => expect(container.firstChild).toBeNull());
+    expect(screen.queryByText('Alpha')).toBeNull();
+    expect(screen.queryByText('New engagement…')).toBeNull();
+  });
+
+  it('hides while the engagement list is still loading (undefined)', () => {
+    engagementsData = undefined;
+    const { container } = render(<TeamEngagementSelector team={team} onSelect={vi.fn()} />);
+    expect(container.firstChild).toBeNull();
   });
 
   it('surfaces a failure message when creation throws', async () => {
