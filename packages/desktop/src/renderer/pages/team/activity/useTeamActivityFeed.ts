@@ -41,12 +41,18 @@ export type TeamActivityFeed = {
  * genuinely newer than the window (desc) or the newest end is loaded (asc) —
  * events landing in the not-yet-loaded older region are dropped and self-heal
  * when paging reaches them.
+ *
+ * When `engagement_id` is set the page is fetched from the engagement-scoped
+ * route instead. WS payloads carry no engagement id, so an unknown event id
+ * can't be attributed client-side and triggers a full refetch instead of the
+ * optimistic window-edge insert.
  */
 export function useTeamActivityFeed(
   team_id: string,
   active: boolean,
   direction: ActivityFeedDirection,
-  kind: ActivityFeedKind
+  kind: ActivityFeedKind,
+  engagement_id?: string | null
 ): TeamActivityFeed {
   const [messagesById, setMessagesById] = useState<Record<string, ITeamMailboxMessage>>({});
   const [tasksById, setTasksById] = useState<Record<string, ITeamTaskItem>>({});
@@ -87,14 +93,17 @@ export function useTeamActivityFeed(
       if (reset) setIsLoading(true);
       else setIsLoadingMore(true);
       try {
-        const page = await ipcBridge.team.listActivity.invoke({
+        const params = {
           team_id,
           limit: PAGE_SIZE,
           direction,
           kind,
           cursor_ts: reset ? undefined : cursorRef.current?.ts,
           cursor_id: reset ? undefined : cursorRef.current?.id,
-        });
+        };
+        const page = engagement_id
+          ? await ipcBridge.team.listEngagementActivity.invoke({ ...params, engagement_id })
+          : await ipcBridge.team.listActivity.invoke(params);
         if (myEpoch !== epochRef.current) return; // superseded — discard
         if (reset) {
           setMessagesById({});
@@ -117,7 +126,7 @@ export function useTeamActivityFeed(
         }
       }
     },
-    [team_id, direction, kind, mergeItems]
+    [team_id, engagement_id, direction, kind, mergeItems]
   );
 
   const resetAndReload = useCallback(() => {
@@ -131,12 +140,12 @@ export function useTeamActivityFeed(
     void fetchPage(true);
   }, [fetchPage]);
 
-  // Reset + first page on activation and whenever team/direction/kind changes.
+  // Reset + first page on activation and whenever team/engagement/direction/kind changes.
   useEffect(() => {
     if (!active) return;
     resetAndReload();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [active, team_id, direction, kind]);
+  }, [active, team_id, engagement_id, direction, kind]);
 
   const loadMore = useCallback(() => {
     void fetchPage(false);
@@ -170,6 +179,13 @@ export function useTeamActivityFeed(
       ipcBridge.team.mailboxChanged.on((event) => {
         if (event.team_id !== team_id) return;
         const m = event.message;
+        if (engagement_id) {
+          // Payload has no engagement id: unknown rows can't be attributed to
+          // this engagement, so reload the window instead of inserting blindly.
+          if (messagesByIdRef.current[m.id]) setMessagesById((prev) => ({ ...prev, [m.id]: m }));
+          else resetAndReload();
+          return;
+        }
         setMessagesById((prev) => {
           if (prev[m.id]) return { ...prev, [m.id]: m }; // in-window update
           return shouldInsertNew(m.created_at, m.id) ? { ...prev, [m.id]: m } : prev;
@@ -183,6 +199,11 @@ export function useTeamActivityFeed(
           return;
         }
         const tk = event.task;
+        if (engagement_id) {
+          if (tasksByIdRef.current[tk.id]) setTasksById((prev) => ({ ...prev, [tk.id]: tk }));
+          else resetAndReload();
+          return;
+        }
         setTasksById((prev) => {
           if (prev[tk.id]) return { ...prev, [tk.id]: tk };
           return shouldInsertNew(tk.created_at, tk.id) ? { ...prev, [tk.id]: tk } : prev;
@@ -194,7 +215,7 @@ export function useTeamActivityFeed(
     ];
     return () => unsubs.forEach((unsubscribe) => unsubscribe());
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [active, team_id, direction, resetAndReload]);
+  }, [active, team_id, engagement_id, direction, resetAndReload]);
 
   const messages = useMemo(() => Object.values(messagesById), [messagesById]);
   const tasks = useMemo(() => Object.values(tasksById), [tasksById]);

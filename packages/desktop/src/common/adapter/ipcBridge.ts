@@ -2342,6 +2342,26 @@ export const team = {
   listEngagementMailbox: httpGet<ITeamMailboxMessage[], { team_id: string; engagement_id: string }>(
     (p) => `/api/teams/${p.team_id}/engagements/${p.engagement_id}/mailbox`
   ),
+  listEngagementActivity: httpGet<
+    ITeamActivityPage,
+    {
+      team_id: string;
+      engagement_id: string;
+      limit?: number;
+      cursor_ts?: number;
+      cursor_id?: string;
+      direction?: 'desc' | 'asc';
+      kind?: 'all' | 'message' | 'task';
+    }
+  >((p) => {
+    const q = new URLSearchParams();
+    if (p.limit != null) q.set('limit', String(p.limit));
+    if (p.cursor_ts != null) q.set('cursor_ts', String(p.cursor_ts));
+    if (p.cursor_id != null) q.set('cursor_id', p.cursor_id);
+    if (p.direction) q.set('direction', p.direction);
+    if (p.kind) q.set('kind', p.kind);
+    return `/api/teams/${p.team_id}/engagements/${p.engagement_id}/activity?${q.toString()}`;
+  }),
   setSessionMode: httpPost<void, { team_id: string; session_mode: string }>(
     (p) => `/api/teams/${p.team_id}/session-mode`,
     (p) => ({ mode: p.session_mode })
