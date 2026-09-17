@@ -1026,7 +1026,7 @@ const TeamPage: React.FC<Props> = ({ team }) => {
         return [];
       }
     },
-    { revalidateOnFocus: false }
+    { revalidateOnFocus: false, keepPreviousData: true }
   );
   const displayAssistants = useMemo(
     () => joinEngagementMembers(team.assistants, selectedEngagement ? (engagementMembers ?? []) : null),
