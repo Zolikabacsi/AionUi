@@ -28,13 +28,15 @@ import { useTeamActivityControls } from '../hooks/useTeamActivityControls';
 
 type Props = {
   team: TTeam;
+  /** Phase 5c: scope the board to one engagement's activity; null/absent keeps the legacy team-scoped feed. */
+  engagement_id?: string | null;
 };
 
 /**
  * Read-only "message & task" board view for a team. Composes the lazy activity
  * feed, the control bar, and the board layout (one column per member lane).
  */
-const TeamActivityView: React.FC<Props> = ({ team }) => {
+const TeamActivityView: React.FC<Props> = ({ team, engagement_id }) => {
   const { t } = useTranslation();
   const { assistants, colorOf } = useTeamTabs();
   const validLaneIds = useMemo(() => assistants.map((a) => a.slot_id), [assistants]);
@@ -47,7 +49,8 @@ const TeamActivityView: React.FC<Props> = ({ team }) => {
     team.id,
     true,
     controls.sortDirection,
-    feedKind
+    feedKind,
+    engagement_id
   );
 
   const knownSlots = useMemo(() => new Set(assistants.map((a) => a.slot_id)), [assistants]);

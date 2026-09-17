@@ -853,7 +853,7 @@ const TeamPageContent: React.FC<TeamPageContentProps> = ({
             {viewMode === 'board' ? (
               // 看板视图：只读展现全队 mailbox 与 task-board。
               <div className='flex-1 h-full min-w-0'>
-                <TeamActivityView team={team} />
+                <TeamActivityView team={team} engagement_id={selectedEngagement?.id ?? null} />
               </div>
             ) : isSingleView ? (
               // 单聊视图：全屏显示当前选中成员（activeSlotId），找不到时回退到 Leader。
@@ -981,8 +981,6 @@ const TeamPageContent: React.FC<TeamPageContentProps> = ({
 const TeamPage: React.FC<Props> = ({ team }) => {
   const { t } = useTranslation();
   const { phase: warmupPhase, runtimeStatus: warmupRuntimeStatus, retry: retryWarmup } = useTeamWarmup(team.id);
-  const { statusMap, membershipMutationBusy, addAssistant, renameAssistant, removeAssistant, mutateTeam } =
-    useTeamSession(team, warmupPhase);
   const { user } = useAuth();
   const { mutate: globalMutate } = useSWRConfig();
 
@@ -1028,12 +1026,18 @@ const TeamPage: React.FC<Props> = ({ team }) => {
         return [];
       }
     },
-    { revalidateOnFocus: false }
+    { revalidateOnFocus: false, keepPreviousData: true }
   );
   const displayAssistants = useMemo(
     () => joinEngagementMembers(team.assistants, selectedEngagement ? (engagementMembers ?? []) : null),
     [team.assistants, selectedEngagement, engagementMembers]
   );
+
+  // The session hook's statusMap must seed the runtime slot ids actually
+  // displayed (engagement members), not only the template assistants.
+  const { statusMap, membershipMutationBusy, addAssistant, renameAssistant, removeAssistant, mutateTeam } =
+    useTeamSession(team, warmupPhase, displayAssistants);
+
   const defaultSlotId = displayAssistants[0]?.slot_id ?? '';
 
   const handleRemoveAssistantWithConfirm = useCallback(

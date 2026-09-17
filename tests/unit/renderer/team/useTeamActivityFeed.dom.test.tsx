@@ -21,6 +21,7 @@ const h = vi.hoisted(() => {
     taskHandlers: [] as Handler<ITeamTaskChangedEvent>[],
     reconnectHandlers: [] as Array<() => void>,
     listActivity: vi.fn(),
+    listEngagementActivity: vi.fn(),
   };
 });
 
@@ -28,6 +29,7 @@ vi.mock('@/common', () => ({
   ipcBridge: {
     team: {
       listActivity: { invoke: h.listActivity },
+      listEngagementActivity: { invoke: h.listEngagementActivity },
       mailboxChanged: {
         on: (fn: (e: ITeamMailboxChangedEvent) => void) => {
           h.mailboxHandlers.push(fn);
@@ -96,7 +98,9 @@ beforeEach(() => {
   h.taskHandlers.length = 0;
   h.reconnectHandlers.length = 0;
   h.listActivity.mockReset();
+  h.listEngagementActivity.mockReset();
   h.listActivity.mockResolvedValue(page([msgItem('m1', 1000)]));
+  h.listEngagementActivity.mockResolvedValue(page([msgItem('m1', 1000)]));
 });
 
 afterEach(() => {
@@ -221,5 +225,68 @@ describe('useTeamActivityFeed (single-cursor pagination)', () => {
       h.taskHandlers.forEach((fn) => fn({ team_id: 't1' }));
     });
     await waitFor(() => expect(result.current.messages).toHaveLength(2));
+  });
+});
+
+describe('useTeamActivityFeed (engagement-scoped)', () => {
+  it('fetches through listEngagementActivity with team+engagement ids, never the team route', async () => {
+    const { result } = renderHook(() => useTeamActivityFeed('t1', true, 'desc', 'task', 'e1'));
+    await waitFor(() => expect(result.current.messages).toHaveLength(1));
+    expect(h.listActivity).not.toHaveBeenCalled();
+    const call = h.listEngagementActivity.mock.calls[0][0];
+    expect(call).toMatchObject({ team_id: 't1', engagement_id: 'e1', limit: 100, direction: 'desc', kind: 'task' });
+    expect(call.cursor_ts).toBeUndefined();
+  });
+
+  it('resets and refetches when the selected engagement changes', async () => {
+    h.listEngagementActivity.mockImplementation((args: { engagement_id: string }) =>
+      Promise.resolve(page([msgItem(args.engagement_id === 'e2' ? 'm-e2' : 'm-e1', 1000)]))
+    );
+    const { result, rerender } = renderHook(
+      ({ eid }: { eid: string }) => useTeamActivityFeed('t1', true, 'desc', 'all', eid),
+      { initialProps: { eid: 'e1' } }
+    );
+    await waitFor(() => expect(result.current.messages.map((m) => m.id)).toEqual(['m-e1']));
+    rerender({ eid: 'e2' });
+    await waitFor(() => expect(result.current.messages.map((m) => m.id)).toEqual(['m-e2']));
+    expect(h.listEngagementActivity).toHaveBeenCalledTimes(2);
+    expect(h.listActivity).not.toHaveBeenCalled();
+  });
+
+  it('WS: unknown-id event triggers a refetch instead of a blind insert', async () => {
+    const { result } = renderHook(() => useTeamActivityFeed('t1', true, 'desc', 'all', 'e1'));
+    await waitFor(() => expect(result.current.messages).toHaveLength(1));
+    act(() =>
+      h.mailboxHandlers.forEach((fn) =>
+        fn({ team_id: 't1', change: 'created', message: message({ id: 'm9', created_at: 5000 }) })
+      )
+    );
+    // No optimistic window-edge insert: m9 is never shown unsolicited.
+    expect(result.current.messages.map((m) => m.id)).not.toContain('m9');
+    expect(h.listEngagementActivity).toHaveBeenCalledTimes(2);
+    await waitFor(() => expect(result.current.messages.map((m) => m.id)).toEqual(['m1']));
+    expect(h.listActivity).not.toHaveBeenCalled();
+  });
+
+  it('WS: an id already in the loaded window still updates in place without refetching', async () => {
+    const { result } = renderHook(() => useTeamActivityFeed('t1', true, 'desc', 'all', 'e1'));
+    await waitFor(() => expect(result.current.messages).toHaveLength(1));
+    act(() =>
+      h.mailboxHandlers.forEach((fn) => fn({ team_id: 't1', change: 'read', message: message({ read: true }) }))
+    );
+    expect(result.current.messages).toHaveLength(1);
+    expect(result.current.messages[0].read).toBe(true);
+    expect(h.listEngagementActivity).toHaveBeenCalledTimes(1);
+  });
+
+  it('WS: a foreign-team event is ignored', async () => {
+    const { result } = renderHook(() => useTeamActivityFeed('t1', true, 'desc', 'all', 'e1'));
+    await waitFor(() => expect(result.current.messages).toHaveLength(1));
+    act(() =>
+      h.mailboxHandlers.forEach((fn) =>
+        fn({ team_id: 'other', change: 'created', message: message({ id: 'mx', created_at: 5000 }) })
+      )
+    );
+    expect(h.listEngagementActivity).toHaveBeenCalledTimes(1);
   });
 });

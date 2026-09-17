@@ -135,17 +135,21 @@ vi.mock('@/renderer/pages/conversation/components/ChatLayout', () => ({
   ),
 }));
 
-// TeamTabs probe: render the active assistants' names straight from the provider
-// so the D2 member join is observable without the real dnd/pill subtree.
+// TeamTabs probe: render the active assistants' runtime slot ids and their
+// statusMap resolution straight from the provider, so both the D2 member join
+// and the engagement-slot status keying are observable without the real
+// dnd/pill subtree.
 vi.mock('@/renderer/pages/team/components/TeamTabs', async () => {
   const ctx = await import('@/renderer/pages/team/hooks/TeamTabsContext');
   return {
     __esModule: true,
     default: () => {
-      const { assistants } = ctx.useTeamTabs();
+      const { assistants, statusMap } = ctx.useTeamTabs();
       return (
         <div data-testid='members-probe'>
-          {assistants.map((a: { assistant_name: string }) => a.assistant_name).join(',')}
+          {assistants
+            .map((a: { slot_id: string }) => `${a.slot_id}:${statusMap.get(a.slot_id)?.status ?? 'unseeded'}`)
+            .join(',')}
         </div>
       );
     },
@@ -285,8 +289,11 @@ describe('TeamPage engagement wiring', () => {
       </MemoryRouter>
     );
 
-    // D2 join: members render with template names but engagement runtime ids.
-    await waitFor(() => expect(screen.getByTestId('members-probe').textContent).toBe('Leader,Member'));
+    // D2 join: members render with engagement runtime ids, and the statusMap
+    // seed resolves through those runtime ids (not the template slot ids).
+    await waitFor(() =>
+      expect(screen.getByTestId('members-probe').textContent).toBe('eng-leader:idle,eng-member:idle')
+    );
     // Explorer project rebinds to the engagement's project (legacy would be null).
     await waitFor(() => expect(setCurrentProjectMock).toHaveBeenCalledWith('proj-eng'));
     // Preview/file-panel scope + workspace follow the engagement's workspace.
@@ -305,7 +312,10 @@ describe('TeamPage engagement wiring', () => {
       </MemoryRouter>
     );
 
-    await waitFor(() => expect(screen.getByTestId('members-probe').textContent).toBe('Leader,Member'));
+    // Legacy team: template slot ids and their seeded statuses, unchanged.
+    await waitFor(() =>
+      expect(screen.getByTestId('members-probe').textContent).toBe('leader-slot:idle,member-slot:idle')
+    );
     // No engagement → project stays whatever the leader conversation yields (null here).
     await waitFor(() => expect(setCurrentProjectMock).toHaveBeenCalledWith(null));
     await waitFor(() => expect(screen.getByTestId('workspace-path').textContent).toBe('/tmp/team'));

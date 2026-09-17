@@ -230,4 +230,36 @@ describe('ipcBridge team adapter', () => {
       body: undefined,
     });
   });
+
+  it('listEngagementActivity builds the engagement activity path with all cursor params', async () => {
+    const { team } = await import('@/common/adapter/ipcBridge');
+
+    await team.listEngagementActivity.invoke({
+      team_id: 'team-1',
+      engagement_id: 'eng-1',
+      limit: 50,
+      cursor_ts: 100,
+      cursor_id: 'c9',
+      direction: 'asc',
+      kind: 'task',
+    });
+
+    expect(httpBridgeMocks.calls).toContainEqual({
+      method: 'GET',
+      path: '/api/teams/team-1/engagements/eng-1/activity?limit=50&cursor_ts=100&cursor_id=c9&direction=asc&kind=task',
+      body: undefined,
+    });
+  });
+
+  it('listEngagementActivity omits unset optional params', async () => {
+    const { team } = await import('@/common/adapter/ipcBridge');
+
+    await team.listEngagementActivity.invoke({ team_id: 'team-1', engagement_id: 'eng-1', kind: 'all' });
+
+    expect(httpBridgeMocks.calls).toContainEqual({
+      method: 'GET',
+      path: '/api/teams/team-1/engagements/eng-1/activity?kind=all',
+      body: undefined,
+    });
+  });
 });

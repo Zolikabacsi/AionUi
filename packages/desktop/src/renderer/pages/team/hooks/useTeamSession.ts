@@ -34,14 +34,46 @@ type AgentStatusInfo = {
   last_message?: string;
 };
 
-export function useTeamSession(team: TTeam, warmupPhase?: TeamWarmupPhase) {
+export function useTeamSession(team: TTeam, warmupPhase?: TeamWarmupPhase, seedAssistants?: TeamAssistant[]) {
   const { mutate: mutateTeam } = useSWR(team.id ? `team/${team.id}` : null, () =>
     ipcBridge.team.get.invoke({ id: team.id })
   );
 
-  const [statusMap, setStatusMap] = useState<Map<string, AgentStatusInfo>>(() => {
-    return new Map(team.assistants.map((a) => [a.slot_id, { slot_id: a.slot_id, status: a.status }]));
-  });
+  // Slot ids the badges/lookups actually render for: engagement members carry
+  // runtime slot ids (D2 join), so seeding from `team.assistants` (template
+  // ids) would never match. Defaults to `team.assistants` for legacy callers.
+  const seed = seedAssistants ?? team.assistants;
+  const seedSlotIdsKey = seed.map((a) => a.slot_id).join('|');
+  const [statusMap, setStatusMap] = useState<Map<string, AgentStatusInfo>>(
+    () => new Map(seed.map((a) => [a.slot_id, { slot_id: a.slot_id, status: a.status }]))
+  );
+
+  // Re-key the seed when the displayed slot set changes (engagement switch):
+  // seed new slots and drop slots no longer shown, but never clobber live
+  // event-sourced entries for still-present slots.
+  useEffect(() => {
+    setStatusMap((prev) => {
+      const ids = new Set(seed.map((a) => a.slot_id));
+      let changed = false;
+      const next = new Map(prev);
+      for (const id of next.keys()) {
+        if (!ids.has(id)) {
+          next.delete(id);
+          changed = true;
+        }
+      }
+      for (const a of seed) {
+        if (!next.has(a.slot_id)) {
+          next.set(a.slot_id, { slot_id: a.slot_id, status: a.status });
+          changed = true;
+        }
+      }
+      return changed ? next : prev;
+    });
+    // `seedSlotIdsKey` is the only trigger: status changes for retained slots
+    // must not overwrite live entries.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [seedSlotIdsKey]);
   const [membershipMutationState, setMembershipMutationState] = useState(createTeamMembershipMutationState);
   const membershipMutationBusy = isTeamMembershipMutationBusy(membershipMutationState);
 
